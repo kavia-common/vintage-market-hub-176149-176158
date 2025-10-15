@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TopNav from "../components/Nav/TopNav";
 import SideNav from "../components/Nav/SideNav";
 import BottomNav from "../components/Nav/BottomNav";
+import Listings from "../pages/listings/Listings";
+import ListingDetail from "../pages/listings/ListingDetail";
+import NewListing from "../pages/listings/NewListing";
+import EditListing from "../pages/listings/EditListing";
 
 // Simple placeholder screens
 function Screen({ title, description }) {
@@ -29,7 +33,10 @@ export default function AppRouter() {
         <main className="content" role="main" style={{ padding: "16px" }}>
           <Routes>
             <Route path="/" element={<Screen title="Home" description="Discover vintage treasures curated by your region." />} />
-            <Route path="/listings" element={<Screen title="Listings" description="Browse all items for sale in your chosen region." />} />
+            <Route path="/listings" element={<Listings />} />
+            <Route path="/listings/new" element={<NewListing />} />
+            <Route path="/listings/:id" element={<ListingDetail />} />
+            <Route path="/listings/:id/edit" element={<EditListing />} />
             <Route path="/offers" element={<Screen title="Offers" description="Negotiate and manage your price offers." />} />
             <Route path="/swaps" element={<Screen title="Swaps" description="Propose and manage item swaps with other users." />} />
             <Route path="/transactions" element={<Screen title="Transactions" description="Track purchases and sales across regions." />} />
