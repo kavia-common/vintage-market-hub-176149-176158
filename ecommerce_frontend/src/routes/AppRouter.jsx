@@ -7,6 +7,8 @@ import Listings from "../pages/listings/Listings";
 import ListingDetail from "../pages/listings/ListingDetail";
 import NewListing from "../pages/listings/NewListing";
 import EditListing from "../pages/listings/EditListing";
+import Offers from "../pages/offers/Offers";
+import NegotiationThread from "../pages/offers/NegotiationThread";
 
 // Simple placeholder screens
 function Screen({ title, description }) {
@@ -37,7 +39,8 @@ export default function AppRouter() {
             <Route path="/listings/new" element={<NewListing />} />
             <Route path="/listings/:id" element={<ListingDetail />} />
             <Route path="/listings/:id/edit" element={<EditListing />} />
-            <Route path="/offers" element={<Screen title="Offers" description="Negotiate and manage your price offers." />} />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/offers/:threadId" element={<NegotiationThread />} />
             <Route path="/swaps" element={<Screen title="Swaps" description="Propose and manage item swaps with other users." />} />
             <Route path="/transactions" element={<Screen title="Transactions" description="Track purchases and sales across regions." />} />
             <Route path="/profile" element={<Screen title="Profile" description="Manage your profile, preferences, and settings." />} />
