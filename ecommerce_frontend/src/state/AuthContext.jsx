@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
+import React, { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
 
 // PUBLIC_INTERFACE
 export const AuthContext = createContext({
@@ -7,6 +7,7 @@ export const AuthContext = createContext({
   // Placeholder methods
   login: async (_credentials) => {},
   logout: () => {},
+  setToken: (_t) => {},
 });
 
 // PUBLIC_INTERFACE
@@ -19,22 +20,40 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   /**
    * AuthProvider manages basic auth token state.
-   * This is a placeholder for real integration with the backend auth API.
+   * Persists token in localStorage and exposes setter for hooks/services.
    */
-  const [token, setToken] = useState(null);
+  const [token, setTokenState] = useState(null);
+
+  // hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("auth_token");
+      if (saved) setTokenState(saved);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const setToken = useCallback((t) => {
+    try {
+      if (t) localStorage.setItem("auth_token", t);
+      else localStorage.removeItem("auth_token");
+    } catch {
+      // ignore
+    }
+    setTokenState(t || null);
+  }, []);
 
   const login = useCallback(async (credentials) => {
-    // TODO: Replace with real API call
+    // Placeholder: individual hooks/services should set real token
     console.info("AuthContext.login called with", credentials);
-    // Simulate receiving a token
-    const fakeToken = "demo-token";
-    setToken(fakeToken);
-    return { success: true, token: fakeToken };
+    // no-op here; token managed by useAuth hook via setToken
+    return { success: true };
   }, []);
 
   const logout = useCallback(() => {
     setToken(null);
-  }, []);
+  }, [setToken]);
 
   const value = useMemo(
     () => ({
@@ -42,8 +61,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       logout,
+      setToken,
     }),
-    [token, login, logout]
+    [token, login, logout, setToken]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
