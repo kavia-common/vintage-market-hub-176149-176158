@@ -1,0 +1,265 @@
+:root {
+  /* Fallbacks if tokens.js hasn't applied vars yet */
+  --color-primary: #4F46E5;
+  --color-secondary: #EC4899;
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #111827;
+  --color-text-muted: rgba(17,24,39,0.7);
+  --color-border: rgba(17,24,39,0.08);
+  --shadow-color: rgba(2,6,23,0.08);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-round: 9999px;
+
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 14px;
+  --space-lg: 20px;
+  --space-xl: 28px;
+
+  --nav-height: 64px;
+  --bottom-nav-height: 64px;
+  --side-nav-width: 240px;
+}
+
+/* Smooth transitions and base typography */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+a:hover { color: #4338CA; }
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 24px var(--shadow-color);
+}
+
+/* Gradient accents */
+.accent-gradient {
+  background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(236,72,153,0.10));
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  box-shadow: 0 2px 10px var(--shadow-color);
+}
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--shadow-color);
+}
+.btn-primary {
+  background: linear-gradient(120deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border: none;
+}
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+.btn-ghost {
+  background: transparent;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+}
+
+/* Navigation layouts */
+.app-shell {
+  display: grid;
+  grid-template-areas:
+    "topnav topnav"
+    "sidenav content"
+    "bottomnav bottomnav";
+  grid-template-columns: var(--side-nav-width) 1fr;
+  grid-template-rows: var(--nav-height) 1fr var(--bottom-nav-height);
+  min-height: 100vh;
+}
+
+.topnav { grid-area: topnav; }
+.sidenav { grid-area: sidenav; }
+.content { grid-area: content; }
+.bottomnav { grid-area: bottomnav; }
+
+/* Hide side/bottom nav appropriately */
+@media (max-width: 1024px) {
+  .sidenav {
+    display: none;
+  }
+  .app-shell {
+    grid-template-areas:
+      "topnav"
+      "content"
+      "bottomnav";
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 1025px) {
+  .bottomnav {
+    display: none;
+  }
+}
+
+/* Card utility */
+.card {
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+/* Titles */
+.h1 { font-size: 28px; font-weight: 700; margin: 0 0 var(--space-md); }
+.h2 { font-size: 22px; font-weight: 600; margin: 0 0 var(--space-sm); }
+.muted { color: var(--color-text-muted); }
+
+/* Spacing helpers */
+.mt-md { margin-top: var(--space-md); }
+.mb-lg { margin-bottom: var(--space-lg); }
+
+/* Nav specifics */
+.topnav-bar {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+}
+.topnav-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: 100%;
+}
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.search {
+  flex: 1 1 auto;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 2px 12px var(--shadow-color);
+}
+.search input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1 1 auto;
+}
+.region {
+  min-width: 160px;
+}
+
+/* SideNav */
+.sidenav-panel {
+  position: sticky;
+  top: 0;
+  height: calc(100vh - var(--nav-height));
+  padding: var(--space-lg) var(--space-md);
+  border-right: 1px solid var(--color-border);
+}
+.navlink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  transition: background .2s ease, color .2s ease;
+}
+.navlink:hover { background: rgba(79,70,229,0.08); }
+.navlink.active {
+  background: linear-gradient(120deg, rgba(79,70,229,0.12), rgba(236,72,153,0.12));
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* BottomNav */
+.bottomnav-bar {
+  height: var(--bottom-nav-height);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 -10px 30px var(--shadow-color);
+}
+.bottom-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.bottom-item.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
