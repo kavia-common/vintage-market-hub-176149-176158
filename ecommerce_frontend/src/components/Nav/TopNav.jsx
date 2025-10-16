@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useRegion } from "../../state/RegionContext";
+import DebugAuthInfo from "../Auth/DebugAuthInfo";
 
 // PUBLIC_INTERFACE
 export default function TopNav() {
@@ -38,9 +39,12 @@ export default function TopNav() {
           </select>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <Link to="/login" className="btn btn-ghost">Login</Link>
-          <Link to="/register" className="btn btn-primary">Sign up</Link>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link to="/login" className="btn btn-ghost">Login</Link>
+            <Link to="/register" className="btn btn-primary">Sign up</Link>
+          </div>
+          <DebugAuthInfo />
         </div>
       </div>
     </header>

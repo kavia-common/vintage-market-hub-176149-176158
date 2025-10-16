@@ -1,46 +1,45 @@
-# Frontend/Backend Integration Notes
+# Integration Notes (Frontend <-> Backend)
 
-- Base URL:
-  - Frontend expects REACT_APP_API_BASE_URL to include the API prefix (e.g., http://localhost:3001/api/v1).
-  - Set in ecommerce_frontend/.env.
+Base URL
+- Frontend expects: `REACT_APP_API_BASE_URL` includes API prefix, e.g. `http://localhost:8000/api/v1`
+- All requests in src/api/client.js are relative to this base.
 
-- CORS:
-  - Backend .env allows local frontend origins: http://localhost:3000, http://127.0.0.1:3000 via CORS_ORIGINS.
-  - Adjust for deployed preview hosts as needed.
+Auth
+- POST /auth/register -> UserRead (no tokens)
+  - payload: { email, username, full_name?, password }
+- POST /auth/login -> { access_token, refresh_token, token_type }
+- GET /auth/me -> UserRead using Authorization: Bearer <access_token>
+- Frontend hook: src/api/hooks/useAuth.js handles token persistence (auth_token) and me() hydration.
 
-- Auth:
-  - Frontend hooks use:
-    - POST /auth/login
-    - GET /auth/me
-    - POST /auth/register
-  - Backend provides these under /api/v1/auth/*.
+Listings
+- POST /listings (auth)
+  - payload: ListingCreate with region_id (UUID) and category_id (UUID)
+- GET /listings supports filters: search, region, category, price_min, price_max, sort=new|price_asc|price_desc, paging
+- PATCH/DELETE /listings/{id} require seller ownership
 
-- Listings:
-  - Frontend GET /listings with query params: search, sort (new|price_asc|price_desc), page, page_size.
-  - POST /listings (create), PATCH /listings/{id} (update), DELETE /listings/{id}, GET /listings/{id}.
-  - Backend returns arrays for list endpoints (no {items,total} envelope) — frontend handles both.
+Offers
+- POST /offers/listings/{listing_id}/offers (auth) -> OfferRead
+  - payload: { amount }
+- POST /offers/{id}/counter -> { amount }
+- POST /offers/{id}/accept, /offers/{id}/decline
+- GET /offers?mine= filters to buyer or listing seller when true (requires auth)
 
-- Offers:
-  - Create offer: POST /offers/listings/{listingId}/offers with { amount }.
-  - List offers: GET /offers with optional filters (status, listing_id, mine).
-  - Get offer: GET /offers/{id}.
-  - Counter offer: POST /offers/{id}/counter with { amount }.
-  - Accept/Decline: POST /offers/{id}/accept or /decline.
-  - Backend does not expose a messages endpoint; frontend sendMessage:
-    - If amount is provided, uses /offers/{id}/counter.
-    - Otherwise, falls back to a UI-only mock message.
+Swaps
+- POST /swaps (auth) -> SwapRead
+  - payload: { proposer_listing_id, recipient_listing_id, notes? }
+- POST /swaps/{id}/accept or /decline (counterparty only)
+- GET /swaps?mine=
 
-- Swaps:
-  - Create: POST /swaps with { proposer_listing_id, recipient_listing_id, notes }.
-  - List: GET /swaps?mine=true&status=...
-  - Get: GET /swaps/{id}
-  - Accept/Decline: POST /swaps/{id}/accept or /decline.
+Transactions
+- POST /transactions/checkout (auth)
+  - payload: { listing_id?, amount, currency="USD", metadata? }
+  - response: { provider, client_secret?, payment_intent_id, transaction }
+- GET /transactions?mine=
 
-- Transactions:
-  - Checkout: POST /transactions/checkout with { listing_id, amount, currency }.
-  - List: GET /transactions?mine=true&page=...&page_size=...
-  - Get: GET /transactions/{id}
-  - Returned shape includes client_secret and provider identifiers when applicable.
+Mock / Test Behavior
+- Payments service returns a mock client_secret and intent id when Stripe keys are not configured.
+- Negotiations threads are minimal; messaging is not fully implemented.
 
-- OpenAPI:
-  - An interfaces/openapi.json exists but appears minimal (only health check). Until a full OpenAPI export is generated, the frontend uses the manual endpoints above. When a full spec is exported, consider generating a typed client and refactoring hooks accordingly.
+Required Seeds
+- regions and categories must exist; ensure backend seeding has been run.
+- Listing creation validates region_id and category_id exist; otherwise returns 404.
