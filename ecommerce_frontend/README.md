@@ -11,6 +11,12 @@ This project provides a minimal React template with a clean, modern UI and minim
 
 ## Getting Started
 
+Environment setup:
+- Copy `.env.example` to `.env` in this folder and adjust values:
+  - `REACT_APP_API_BASE_URL` -> For local FastAPI backend use `http://localhost:3001`
+  - `REACT_APP_PAYMENT_PUBLISHABLE_KEY` -> Your payment provider's PUBLISHABLE (non-secret) key
+- Do NOT commit your `.env` file or any secrets.
+
 In the project directory, you can run:
 
 ### `npm start`
