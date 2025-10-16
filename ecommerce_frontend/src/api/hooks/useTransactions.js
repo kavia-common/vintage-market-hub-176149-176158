@@ -93,13 +93,23 @@ export default function useTransactions(initial = {}) {
     try {
       try {
         const res = await http.post("/transactions/checkout", { listing_id: listingId, amount, currency });
-        // Expecting { clientSecret, transactionId }
-        const data = res?.data || {};
-        if (!data.clientSecret) {
-          // Normalize shape if backend returns something different
-          data.clientSecret = res?.data?.client_secret || `mock_secret_${Date.now()}`;
+        // Normalize shape from backend CheckoutResponse
+        const raw = res?.data || {};
+        const normalized = {
+          clientSecret: raw.clientSecret || raw.client_secret || raw.client_secret === null ? raw.client_secret : undefined,
+          transactionId: raw.transactionId || raw?.transaction?.id,
+          provider: raw.provider,
+          paymentIntentId: raw.payment_intent_id,
+          transaction: raw.transaction,
+          listingId,
+          amount,
+          currency,
+        };
+        if (!normalized.clientSecret) {
+          // When provider mock may omit client_secret; keep a mock to allow UI testing
+          normalized.clientSecret = `mock_secret_${Date.now()}`;
         }
-        return data;
+        return normalized;
       } catch {
         // Mock a checkout response
         return {

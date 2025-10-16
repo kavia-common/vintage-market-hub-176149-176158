@@ -142,6 +142,73 @@ export default function useOffers(initial = {}) {
     }
   }, []);
 
+  const acceptOffer = useCallback(async (offerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      try {
+        const res = await http.post(`/offers/${offerId}/accept`);
+        // Refresh current thread if it's the same id
+        if (thread && thread.id === offerId) {
+          const offer = res.data;
+          setThread((prev) => ({
+            ...prev,
+            status: offer.status,
+            latestOffer: { amount: offer.amount, currency: offer.currency || "USD", by: prev?.latestOffer?.by || "buyer" },
+            updatedAt: new Date().toISOString(),
+          }));
+        }
+        await fetchOffers();
+        return res.data;
+      } catch {
+        // Mock accept
+        setOffers((prev) => prev.map((t) => (t.id === offerId ? { ...t, status: "accepted" } : t)));
+        if (thread && thread.id === offerId) {
+          setThread((prev) => ({ ...prev, status: "accepted", updatedAt: new Date().toISOString() }));
+        }
+        return { id: offerId, status: "accepted" };
+      }
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchOffers, thread]);
+
+  const declineOffer = useCallback(async (offerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      try {
+        const res = await http.post(`/offers/${offerId}/decline`);
+        if (thread && thread.id === offerId) {
+          const offer = res.data;
+          setThread((prev) => ({
+            ...prev,
+            status: offer.status,
+            latestOffer: { amount: offer.amount, currency: offer.currency || "USD", by: prev?.latestOffer?.by || "buyer" },
+            updatedAt: new Date().toISOString(),
+          }));
+        }
+        await fetchOffers();
+        return res.data;
+      } catch {
+        // Mock decline
+        setOffers((prev) => prev.map((t) => (t.id === offerId ? { ...t, status: "declined" } : t)));
+        if (thread && thread.id === offerId) {
+          setThread((prev) => ({ ...prev, status: "declined", updatedAt: new Date().toISOString() }));
+        }
+        return { id: offerId, status: "declined" };
+      }
+    } catch (err) {
+      setError(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchOffers, thread]);
+
   const sendMessage = useCallback(async (threadId, { text, amount = null, currency = "USD" }) => {
     setLoading(true);
     setError(null);
@@ -206,8 +273,8 @@ export default function useOffers(initial = {}) {
 
   const value = useMemo(() => ({
     offers, total, thread, threadMessages, loading, error, filters,
-    actions: { fetchOffers, createOffer, getThread, sendMessage, setRole, setStatus, setPage, setPageSize }
-  }), [offers, total, thread, threadMessages, loading, error, filters, fetchOffers, createOffer, getThread, sendMessage, setRole, setStatus, setPage, setPageSize]);
+    actions: { fetchOffers, createOffer, getThread, sendMessage, acceptOffer, declineOffer, setRole, setStatus, setPage, setPageSize }
+  }), [offers, total, thread, threadMessages, loading, error, filters, fetchOffers, createOffer, getThread, sendMessage, acceptOffer, declineOffer, setRole, setStatus, setPage, setPageSize]);
 
   return value;
 }
