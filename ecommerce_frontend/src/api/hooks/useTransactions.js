@@ -36,15 +36,12 @@ export default function useTransactions(initial = {}) {
       setError(null);
       const params = { ...filters, ...overrides };
       try {
-        const query = new URLSearchParams({
-          mine: params.role && params.role !== "all" ? "true" : "",
-          page: String(params.page),
-          page_size: String(params.pageSize),
-        }).toString();
+        const q = new URLSearchParams();
+        if (params.role && params.role !== "all") q.set("mine", "true");
 
         try {
           // Backend supports mine filter; we map role to mine=true if role !== 'all'
-          const res = await http.get(`/transactions?${query}`);
+          const res = await http.get(`/transactions?${q.toString()}`);
           const data = Array.isArray(res.data?.items)
             ? res.data.items
             : Array.isArray(res.data)

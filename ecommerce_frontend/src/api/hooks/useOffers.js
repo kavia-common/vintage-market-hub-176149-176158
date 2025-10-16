@@ -40,15 +40,13 @@ export default function useOffers(initial = {}) {
     setError(null);
     const params = { ...filters, ...overrides };
     try {
-      const query = new URLSearchParams({
-        role: params.role,
-        status: params.status,
-        page: String(params.page),
-        pageSize: String(params.pageSize),
-      }).toString();
+      // Backend supports status and mine; role !== 'all' -> mine=true
+      const q = new URLSearchParams();
+      if (params.status && params.status !== "all") q.set("status", params.status);
+      if (params.role && params.role !== "all") q.set("mine", "true");
 
       try {
-        const res = await http.get(`/offers?${query}`);
+        const res = await http.get(`/offers?${q.toString()}`);
         const data = Array.isArray(res.data?.items)
           ? res.data.items
           : Array.isArray(res.data)

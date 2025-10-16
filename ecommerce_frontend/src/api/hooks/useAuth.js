@@ -62,7 +62,8 @@ export default function useAuth() {
     } catch (err) {
       setUser(null);
       // If unauthorized, clear token
-      if (err && (err.status === 401 || err.status === 403)) {
+      const status = err?.status || err?.response?.status;
+      if (status === 401 || status === 403) {
         persistToken(null);
       }
       setError(err);
@@ -106,22 +107,39 @@ export default function useAuth() {
 
   const register = useCallback(
     async (payload) => {
-      // payload may include { name, email, password, ... }
+      // payload may include { email, password, username?, fullName? } from UI
       setLoading(true);
       setError(null);
       try {
-        const res = await http.post("/auth/register", payload);
-        // Some backends auto-login, some return token; handle both:
-        const tkn = res?.data?.access_token || res?.data?.token || null;
-        if (tkn) {
-          persistToken(tkn);
+        // Map UI payload to backend expected schema
+        const body = {
+          email: payload.email,
+          username: payload.username || (payload.email ? payload.email.split("@")[0] : undefined),
+          full_name: payload.fullName || payload.name || undefined,
+          password: payload.password,
+        };
+        const res = await http.post("/auth/register", body);
+
+        // Backend returns UserRead (no tokens). Auto-login using provided credentials.
+        if (payload?.email && payload?.password) {
           try {
-            await me();
+            await login(payload.email, payload.password);
           } catch {
-            // ignore
+            // ignore login failure after register; user can login manually
           }
-          if (authCtx?.login) {
-            await authCtx.login({ email: payload?.email });
+        } else {
+          // If token is somehow returned, persist it
+          const tkn = res?.data?.access_token || res?.data?.token || null;
+          if (tkn) {
+            persistToken(tkn);
+            try {
+              await me();
+            } catch {
+              // ignore
+            }
+            if (authCtx?.login) {
+              await authCtx.login({ email: payload?.email });
+            }
           }
         }
         return res.data;
@@ -132,7 +150,7 @@ export default function useAuth() {
         setLoading(false);
       }
     },
-    [authCtx, me, persistToken]
+    [authCtx, me, persistToken, login]
   );
 
   const logout = useCallback(() => {
