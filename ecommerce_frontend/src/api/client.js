@@ -16,6 +16,10 @@
  *   const data = await res.data; // already parsed json
  */
 
+/**
+ * Expect REACT_APP_API_BASE_URL to include the API prefix, e.g.:
+ * http://localhost:3001/api/v1
+ */
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 /**

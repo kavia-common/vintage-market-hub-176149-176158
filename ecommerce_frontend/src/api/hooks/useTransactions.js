@@ -37,12 +37,13 @@ export default function useTransactions(initial = {}) {
       const params = { ...filters, ...overrides };
       try {
         const query = new URLSearchParams({
-          role: params.role,
+          mine: params.role && params.role !== "all" ? "true" : "",
           page: String(params.page),
-          pageSize: String(params.pageSize),
+          page_size: String(params.pageSize),
         }).toString();
 
         try {
+          // Backend supports mine filter; we map role to mine=true if role !== 'all'
           const res = await http.get(`/transactions?${query}`);
           const data = Array.isArray(res.data?.items)
             ? res.data.items
@@ -91,7 +92,7 @@ export default function useTransactions(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.post("/transactions/checkout", { listingId, amount, currency });
+        const res = await http.post("/transactions/checkout", { listing_id: listingId, amount, currency });
         // Expecting { clientSecret, transactionId }
         const data = res?.data || {};
         if (!data.clientSecret) {

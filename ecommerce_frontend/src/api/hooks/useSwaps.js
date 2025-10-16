@@ -46,6 +46,7 @@ export default function useSwaps(initial = {}) {
       }).toString();
 
       try {
+        // Backend supports mine boolean and status
         const res = await http.get(`/swaps?${query}`);
         const data = Array.isArray(res.data?.items)
           ? res.data.items
@@ -71,7 +72,7 @@ export default function useSwaps(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.post("/swaps", { myListingId, theirListingId, note });
+        const res = await http.post("/swaps", { proposer_listing_id: myListingId, recipient_listing_id: theirListingId, notes: note });
         await fetchSwaps();
         return res.data;
       } catch {
@@ -118,7 +119,15 @@ export default function useSwaps(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.patch(`/swaps/${id}`, { status });
+        let res;
+        if (status === "accepted" || status === "accept") {
+          res = await http.post(`/swaps/${id}/accept`);
+        } else if (status === "declined" || status === "reject" || status === "decline") {
+          res = await http.post(`/swaps/${id}/decline`);
+        } else {
+          // No direct backend route; fall back to mock update
+          throw new Error("Unsupported status transition via API");
+        }
         await fetchSwaps();
         return res.data;
       } catch {

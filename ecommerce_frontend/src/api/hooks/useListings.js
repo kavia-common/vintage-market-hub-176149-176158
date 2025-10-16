@@ -33,17 +33,18 @@ export default function useListings(initial = {}) {
     try {
       // Placeholder: try backend; if fails, return mocked data
       const query = new URLSearchParams({
-        q: params.search || "",
-        region: params.region || "",
-        sort: params.sort || "",
+        search: params.search || "",
+        // region expects UUID on backend; when using names, backend will ignore. Leave empty by default.
+        sort: params.sort === "newest" ? "new" : (params.sort === "price_low_high" ? "price_asc" : (params.sort === "price_high_low" ? "price_desc" : params.sort || "new")),
         page: String(params.page || 1),
-        pageSize: String(params.pageSize || 20),
+        page_size: String(params.pageSize || 20),
       }).toString();
       try {
         const res = await http.get(`/listings?${query}`);
-        const data = Array.isArray(res.data?.items) ? res.data.items : (Array.isArray(res.data) ? res.data : []);
+        // Backend returns a list directly (no {items,total} envelope)
+        const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.items) ? res.data.items : []);
         setListings(data);
-        setTotal(res.data?.total || data.length);
+        setTotal(Array.isArray(res.data) ? res.data.length : (res.data?.total || data.length));
       } catch (apiErr) {
         // mock some data
         const mock = generateMockListings(params);
@@ -104,7 +105,7 @@ export default function useListings(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.put(`/listings/${id}`, payload);
+        const res = await http.patch(`/listings/${id}`, payload);
         await fetchListings();
         return res.data;
       } catch {

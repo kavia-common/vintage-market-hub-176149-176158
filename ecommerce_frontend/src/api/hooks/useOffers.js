@@ -73,7 +73,8 @@ export default function useOffers(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.post("/offers", { listingId, amount, currency, note });
+        // Backend route: POST /offers/listings/{listingId}/offers with { amount }
+        const res = await http.post(`/offers/listings/${listingId}/offers`, { amount });
         await fetchOffers();
         return res.data;
       } catch {
@@ -114,10 +115,19 @@ export default function useOffers(initial = {}) {
     try {
       try {
         const res = await http.get(`/offers/${threadId}`);
-        const t = res.data?.thread || res.data;
+        const offer = res.data;
+        // Normalize to thread-like structure for UI
+        const t = {
+          id: offer.id,
+          listing: { id: offer.listing_id, title: "Listing", image: "", price: offer.amount, currency: offer.currency || "USD" },
+          participants: {}, // unknown without additional endpoints
+          status: offer.status,
+          latestOffer: { amount: offer.amount, currency: offer.currency || "USD" },
+          updatedAt: offer.updated_at || offer.created_at,
+        };
         setThread(t);
-        setThreadMessages(res.data?.messages || []);
-        return { thread: t, messages: res.data?.messages || [] };
+        setThreadMessages([]);
+        return { thread: t, messages: [] };
       } catch {
         const mock = generateMockThread(threadId);
         setThread(mock.thread);
@@ -137,17 +147,28 @@ export default function useOffers(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.post(`/offers/${threadId}/messages`, { text, amount, currency });
-        const message = res.data?.message || res.data;
-        setThreadMessages(prev => [...prev, message]);
-        setThread(prev => ({
-          ...prev,
-          latestOffer: amount ? { amount, currency, by: "buyer" } : prev?.latestOffer,
-          updatedAt: message?.createdAt || new Date().toISOString(),
-          lastMessage: { text: message?.text || text, createdAt: message?.createdAt || new Date().toISOString() },
-        }));
-        return message;
-      } catch {
+        // Backend has no messages endpoint. If amount is provided, treat as a counter offer:
+        if (amount) {
+          const res = await http.post(`/offers/${threadId}/counter`, { amount });
+          const offer = res.data;
+          const message = {
+            id: `msg-${Date.now()}`,
+            text: text || `Countered to ${amount}`,
+            amount,
+            currency,
+            by: "buyer",
+            createdAt: new Date().toISOString(),
+          };
+          setThreadMessages(prev => [...prev, message]);
+          setThread(prev => ({
+            ...prev,
+            latestOffer: { amount: offer.amount, currency: currency, by: "buyer" },
+            updatedAt: message.createdAt,
+            lastMessage: { text: message.text, createdAt: message.createdAt },
+          }));
+          return message;
+        }
+        // Otherwise, no-op with mock message to keep UI responsive
         const message = {
           id: `msg-${Date.now()}`,
           text,
