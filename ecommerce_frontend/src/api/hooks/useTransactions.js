@@ -93,10 +93,10 @@ export default function useTransactions(initial = {}) {
         // Normalize shape from backend CheckoutResponse
         const raw = res?.data || {};
         const normalized = {
-          clientSecret: raw.clientSecret || raw.client_secret || raw.client_secret === null ? raw.client_secret : undefined,
-          transactionId: raw.transactionId || raw?.transaction?.id,
+          clientSecret: raw.client_secret ?? raw.clientSecret,
+          transactionId: raw?.transaction?.id ?? raw.transactionId,
           provider: raw.provider,
-          paymentIntentId: raw.payment_intent_id,
+          paymentIntentId: raw.payment_intent_id ?? raw.paymentIntentId,
           transaction: raw.transaction,
           listingId,
           amount,

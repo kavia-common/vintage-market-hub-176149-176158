@@ -212,7 +212,8 @@ export default function useOffers(initial = {}) {
     setError(null);
     try {
       try {
-        // Backend has no messages endpoint. If amount is provided, treat as a counter offer:
+        // Backend has no messages endpoint. If amount is provided, treat as a counter offer (seller's perspective).
+        // In local demo we allow buyer-side to simulate counter for UI continuity.
         if (amount) {
           const res = await http.post(`/offers/${threadId}/counter`, { amount });
           const offer = res.data;

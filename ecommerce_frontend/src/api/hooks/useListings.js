@@ -77,12 +77,28 @@ export default function useListings(initial = {}) {
     }
   }, []);
 
+  // Map UI form shape to backend expected payload
+  const mapFormToBackend = (data) => {
+    // Backend expects region_id and category_id (UUIDs). Our UI currently has human-readable names.
+    // For now, pass through optional region_id/category_id if present; otherwise omit so backend can reject gracefully or mock will handle.
+    const mapped = {
+      title: data.title,
+      description: data.description || "",
+      price: Number(data.price || 0),
+      currency: data.currency || "USD",
+    };
+    if (data.region_id) mapped.region_id = data.region_id;
+    if (data.category_id) mapped.category_id = data.category_id;
+    // If images exist in UI we keep them client-side (backend images endpoint is separate)
+    return mapped;
+  };
+
   const createListing = useCallback(async (payload) => {
     setLoading(true);
     setError(null);
     try {
       try {
-        const res = await http.post("/listings", payload);
+        const res = await http.post("/listings", mapFormToBackend(payload));
         await fetchListings();
         return res.data;
       } catch {
@@ -105,7 +121,7 @@ export default function useListings(initial = {}) {
     setError(null);
     try {
       try {
-        const res = await http.patch(`/listings/${id}`, payload);
+        const res = await http.patch(`/listings/${id}`, mapFormToBackend(payload));
         await fetchListings();
         return res.data;
       } catch {

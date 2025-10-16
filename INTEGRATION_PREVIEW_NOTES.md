@@ -1,42 +1,46 @@
-# Preview Configuration Checklist (Step 4.1)
+# Integration Preview Notes - Step 4.2
 
-This document tracks the preview environment configuration between the React frontend and FastAPI backend.
+This document captures end-to-end validation results across running previews and any small code/config adjustments applied.
 
-1) Frontend base URL
-- File: ecommerce_frontend/.env
-- REACT_APP_API_BASE_URL must include the API prefix: /api/v1
-- Current: REACT_APP_API_BASE_URL=http://localhost:3001/api/v1 (OK for local dev)
+Changes applied
+- Listings (frontend)
+  - Added mapFormToBackend in useListings to send snake_case and backend-expected fields.
+  - ListingForm now supports optional region_id and category_id UUID fields in a developer-only panel. UI continues to use human-readable region/category for now.
+- Offers (frontend)
+  - Confirmed routes to backend:
+    - Create: POST /offers/listings/{listingId}/offers { amount }
+    - Counter: POST /offers/{offerId}/counter { amount }
+    - Accept: POST /offers/{offerId}/accept
+    - Decline: POST /offers/{offerId}/decline
+  - Hook already aligned; clarified inline comment that messages endpoint is not present on backend; simulated local message append kept for UX continuity.
+- Checkout (frontend)
+  - Normalized response mapping to backend CheckoutResponse { client_secret, payment_intent_id, provider, transaction }.
 
-2) Backend CORS origins
-- File: ecommerce_backend/.env
-- CORS_ORIGINS must include your frontend preview origin(s).
-- Current: http://localhost:3000, http://127.0.0.1:3000, https://vscode-internal-15579-beta.beta01.cloud.kavia.ai:3000 (updated)
+Validated flows
+- Listings
+  - GET /listings: Frontend tolerates array or {items,total}. Backend returns array; OK.
+  - GET /listings/:id: OK.
+  - POST /listings: Requires Authorization + region_id/category_id UUIDs. UI provides dev-only fields; when unset, mock path still works.
+  - PATCH /listings/:id: Authorization required; payload mapped to backend keys.
+- Offers
+  - List, create, counter, accept/decline wired to backend paths. Ownership auth is required on backend.
+- Checkout
+  - POST /transactions/checkout: mapped correctly; response normalized. Mock path still available if backend not reachable.
 
-3) Frontend API hooks path validation
-- Hooks call these endpoints relative to REACT_APP_API_BASE_URL:
-  - Auth: /auth/login, /auth/register, /auth/me
-  - Listings: /listings with query params search, sort, page, page_size (backend also supports region/category UUIDs)
-  - Offers: 
-    - GET /offers?status=&mine=
-    - POST /offers/listings/{listingId}/offers
-    - GET /offers/{id}
-    - POST /offers/{id}/counter, /accept, /decline
-  - Swaps:
-    - GET /swaps?status=&mine=
-    - POST /swaps
-    - GET /swaps/{id}
-    - POST /swaps/{id}/accept, /decline
-  - Transactions:
-    - GET /transactions?mine=
-    - GET /transactions/{id}
-    - POST /transactions/checkout
-- All paths match backend routers under /api/v1. No unsupported params used.
+Remaining gaps / follow-ups
+- UUID wiring for Region/Category:
+  - UI still presents human-readable options. Need to fetch regions and categories and map selections to UUIDs; then pass region_id/category_id consistently.
+- Auth:
+  - Backend listings/offers/transactions protected routes require valid Bearer tokens; ensure login/register and token storage are working in the preview environment.
+- Images:
+  - Backend image upload is stubbed; UI currently manages image URLs only. Complete upload flow and static serving to be implemented later.
+- Negotiation messages:
+  - Backend lacks message thread storage; UI simulates messages. Add messages model/endpoint if conversational history is required.
+- Pagination totals:
+  - Backend list endpoints return arrays; UI can show counts but server-side totals would improve UX.
 
-4) Remaining discrepancies / notes
-- If backend is not running on localhost:3001 when using cloud previews, update REACT_APP_API_BASE_URL to the backend’s public URL (include /api/v1).
-- Offers "thread" view in the frontend normalizes Offer data; there isn’t a separate messages endpoint yet—UI uses mock messages when sending plain text messages without counters.
-- Image upload for listings is a stub (/listings/{id}/images) and won’t serve images unless a static mount is added.
+Checklist next
+- Implement Regions/Categories fetching hooks and wire to ListingForm selects with UUIDs.
+- Add auth guard/redirection on create/update actions.
+- Optional: transactions/checkout success view (receipt).
 
-Operational tips
-- After changing .env files, restart dev servers to pick up new values.
-- For Stripe test mode, backend will return a mock client_secret if STRIPE_SECRET_KEY is not configured, allowing UI checkout flows to proceed.

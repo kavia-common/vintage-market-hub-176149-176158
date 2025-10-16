@@ -13,11 +13,15 @@ export default function ListingForm({ initial = {}, onSubmit, submitting = false
     title: initial.title || "",
     price: initial.price || "",
     currency: initial.currency || "USD",
+    // UI-friendly labels (kept for now)
     region: initial.region || "Global",
-    condition: initial.condition || "Good",
     category: initial.category || "Clothing",
+    condition: initial.condition || "Good",
     description: initial.description || "",
     images: initial.images || [],
+    // Backend UUIDs if provided by parent (preferred for API)
+    region_id: initial.region_id || "",
+    category_id: initial.category_id || "",
   });
   const [imageUrl, setImageUrl] = useState("");
 
@@ -34,6 +38,7 @@ export default function ListingForm({ initial = {}, onSubmit, submitting = false
 
   const submit = async (e) => {
     e.preventDefault();
+    // Submit both user-friendly and UUID fields; hook will map to backend
     await onSubmit?.(form);
   };
 
@@ -87,6 +92,23 @@ export default function ListingForm({ initial = {}, onSubmit, submitting = false
           </select>
         </div>
       </div>
+
+      <details className="card" style={{ padding: 12 }}>
+        <summary className="muted" style={{ cursor: "pointer" }}>Developer: provide Region/Category UUIDs (backend)</summary>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+          <div style={{ display: "grid", gap: 8 }}>
+            <label>region_id (UUID, optional)</label>
+            <input className="input" placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6" value={form.region_id} onChange={(e) => setField("region_id", e.target.value)} />
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            <label>category_id (UUID, optional)</label>
+            <input className="input" placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6" value={form.category_id} onChange={(e) => setField("category_id", e.target.value)} />
+          </div>
+          <p className="muted" style={{ gridColumn: "1 / -1", margin: 0, fontSize: 12 }}>
+            Note: Backend requires UUIDs. While UI shows names, providing UUIDs will enable real API calls.
+          </p>
+        </div>
+      </details>
 
       <div style={{ display: "grid", gap: 10 }}>
         <label>Description</label>
