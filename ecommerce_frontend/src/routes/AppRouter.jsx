@@ -11,6 +11,8 @@ import Offers from "../pages/offers/Offers";
 import NegotiationThread from "../pages/offers/NegotiationThread";
 import Swaps from "../pages/swaps/Swaps";
 import NewSwap from "../pages/swaps/NewSwap";
+import Transactions from "../pages/transactions/Transactions";
+import Checkout from "../pages/transactions/Checkout";
 
 // Simple placeholder screens
 function Screen({ title, description }) {
@@ -45,7 +47,8 @@ export default function AppRouter() {
             <Route path="/offers/:threadId" element={<NegotiationThread />} />
             <Route path="/swaps" element={<Swaps />} />
             <Route path="/swaps/new" element={<NewSwap />} />
-            <Route path="/transactions" element={<Screen title="Transactions" description="Track purchases and sales across regions." />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Screen title="Profile" description="Manage your profile, preferences, and settings." />} />
             <Route path="/login" element={<Screen title="Login" description="Access your account and start exploring." />} />
             <Route path="/register" element={<Screen title="Register" description="Create an account to list, buy, and swap items." />} />

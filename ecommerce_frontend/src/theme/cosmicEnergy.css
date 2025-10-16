@@ -372,3 +372,15 @@ a:hover { color: #4338CA; }
     gap: 12px;
   }
 }
+
+/* Checkout / PaymentWidget helpers */
+.payment-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .payment-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
